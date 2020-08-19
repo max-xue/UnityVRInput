@@ -9,37 +9,49 @@ namespace VRInput
 
         public EVRButtonId Button = EVRButtonId.k_EButton_SteamVR_Trigger;
         [SerializeField]
-        private SteamVR_TrackedObject trackedObject;
+        private SteamVR_Behaviour_Pose trackedObject;
+        public SteamVR_Action_Boolean interactWithUI = SteamVR_Input.GetBooleanAction("InteractUI");
+        public SteamVR_Action_Vibration hapticAction = SteamVR_Input.GetAction<SteamVR_Action_Vibration>("Haptic");
 
         public override bool ButtonDown()
         {
             var device = GetDevice();
-            return device != null && device.GetPressDown(Button);
+            return device != null && interactWithUI.GetStateDown(device.inputSource);
         }
 
         public override bool ButtonUp()
         {
             var device = GetDevice();
-            return device != null && device.GetPressUp(Button);
+            return device != null && interactWithUI.GetStateUp(device.inputSource);
         }
 
         public override void OnEnterControl(GameObject control)
         {
+            if (!control.activeSelf) return;
+
             var device = GetDevice();
             if (device != null)
-                device.TriggerHapticPulse(1000);
+                TriggerHapticPulse(1000);
         }
 
         public override void OnExitControl(GameObject control)
         {
+            if (!control.activeSelf) return;
+
             var device = GetDevice();
             if (device != null)
-                device.TriggerHapticPulse(600);
+                TriggerHapticPulse(600);
         }
 
-        private SteamVR_Controller.Device GetDevice()
+        private SteamVR_Behaviour_Pose GetDevice()
         {
-            return trackedObject ? SteamVR_Controller.Input((int)trackedObject.index) : null;
+            return trackedObject;
+        }
+
+        private void TriggerHapticPulse(ushort microSecondsDuration)
+        {
+            //float seconds = (float)microSecondsDuration / 1000000f;
+            //hapticAction.Execute(0, seconds, 1f / seconds, 1, trackedObject.inputSource);
         }
 
         #endregion
